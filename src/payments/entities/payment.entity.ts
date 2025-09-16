@@ -13,11 +13,8 @@ export class Payment {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount: number;
 
-  @Column({
-    type: 'enum',
-    enum: ['vnpay', 'momo', 'cash', 'stripe'],
-  })
-  method: string;
+  @Column()
+  paymentMethod: string;
 
   @Column({
     type: 'enum',

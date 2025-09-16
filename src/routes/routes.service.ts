@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRouteDto } from './dto/create-route.dto';
 import { UpdateRouteDto } from './dto/update-route.dto';
 import { Route } from './entities/route.entity';
@@ -13,10 +13,7 @@ export class RoutesService {
   ) {}
 
   create(createRouteDto: CreateRouteDto) : Promise<Route> {
-    const route = new Route();
-    route.origin = createRouteDto.origin;
-    route.destination = createRouteDto.destination;
-    route.distance = createRouteDto.distance;
+    const route = this.routeRepository.create(createRouteDto);
     return this.routeRepository.save(route);
   }
 
@@ -24,24 +21,29 @@ export class RoutesService {
     return this.routeRepository.find();
   }
 
-  findOne(id: number) : Promise<Route> {
-    return this.routeRepository.findOneBy({ id });
+  async findOne(id: number) : Promise<Route> {
+    const route = await this.routeRepository.findOneBy({ id });
+    if (!route) {
+      throw new NotFoundException(`Route with ID ${id} not found`);
+    }
+    return route;
   }
 
   async update(id: number, updateRouteDto: UpdateRouteDto) : Promise<Route> {
-    const route = await this.findOne(id);
+    const route = await this.routeRepository.preload({
+      id: id,
+      ...updateRouteDto,
+    });
     if (!route) {
-      throw new Error('Route not found');
+      throw new NotFoundException(`Route with ID ${id} not found`);
     }
-    Object.assign(route, updateRouteDto);
     return this.routeRepository.save(route);
   }
 
   async remove(id: number) : Promise<void> {
-    const route = await this.findOne(id);
-    if (!route) {
-      throw new Error('Route not found');
+    const result = await this.routeRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Route with ID ${id} not found`);
     }
-    await this.routeRepository.remove(route);
   }
 }

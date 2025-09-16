@@ -7,18 +7,14 @@ export class Bus {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @Column({ name: 'plate_number', length: 20, unique: true })
-  plateNumber: string;
+  @Column({ unique: true })
+  licensePlate: string;
 
-  @Column({
-    name: 'bus_type',
-    type: 'enum',
-    enum: ['limousine', 'sleeper', 'seater'],
-  })
-  busType: string;
+  @Column()
+  model: string;
 
-  @Column({ name: 'total_seats', type: 'int' })
-  totalSeats: number;
+  @Column()
+  capacity: number;
 
   @OneToMany(() => Trip, trip => trip.bus)
   trips: Trip[];

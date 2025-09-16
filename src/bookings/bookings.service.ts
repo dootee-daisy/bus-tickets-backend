@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { Booking } from './entities/booking.entity';
@@ -13,9 +13,7 @@ export class BookingsService {
   ) {}
 
   create(createBookingDto: CreateBookingDto) : Promise<Booking> {
-    const booking = new Booking();
-    booking.bookingDate = createBookingDto.bookingDate;
-    booking.status = createBookingDto.status;
+    const booking = this.bookingRepository.create(createBookingDto);
     return this.bookingRepository.save(booking);
   }
 
@@ -23,24 +21,29 @@ export class BookingsService {
     return this.bookingRepository.find();
   }
 
-  findOne(id: number) : Promise<Booking> {
-    return this.bookingRepository.findOneBy({ id });
+  async findOne(id: number) : Promise<Booking> {
+    const booking = await this.bookingRepository.findOneBy({ id });
+    if (!booking) {
+      throw new NotFoundException(`Booking with ID ${id} not found`);
+    }
+    return booking;
   }
 
   async update(id: number, updateBookingDto: UpdateBookingDto) : Promise<Booking> {
-    const booking = await this.findOne(id);
+    const booking = await this.bookingRepository.preload({
+      id: id,
+      ...updateBookingDto,
+    });
     if (!booking) {
-      throw new Error('Booking not found');
+      throw new NotFoundException(`Booking with ID ${id} not found`);
     }
-    Object.assign(booking, updateBookingDto);
     return this.bookingRepository.save(booking);
   }
 
   async remove(id: number) : Promise<void> {
-    const booking = await this.findOne(id);
-    if (!booking) {
-      throw new Error('Booking not found');
+    const result = await this.bookingRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Booking with ID ${id} not found`);
     }
-    await this.bookingRepository.remove(booking);
   }
 }

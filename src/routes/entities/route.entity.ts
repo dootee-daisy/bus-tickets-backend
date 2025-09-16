@@ -6,14 +6,14 @@ export class Route {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @Column({ name: 'start_location', length: 100 })
-  startLocation: string;
+  @Column()
+  origin: string;
 
-  @Column({ name: 'end_location', length: 100 })
-  endLocation: string;
+  @Column()
+  destination: string;
 
-  @Column({ name: 'distance_km', type: 'int', nullable: true })
-  distanceKm: number;
+  @Column()
+  distance: number;
 
   @OneToMany(() => Trip, trip => trip.route)
   trips: Trip[];

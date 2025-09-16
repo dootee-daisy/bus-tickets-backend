@@ -9,6 +9,9 @@ export class Booking {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
+  @Column({ type: 'datetime' })
+  bookingDate: Date;
+
   @ManyToOne(() => User, user => user.bookings)
   @JoinColumn({ name: 'user_id' })
   user: User;

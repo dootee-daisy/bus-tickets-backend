@@ -14,6 +14,9 @@ export class Seat {
   @Column({ name: 'seat_number', length: 10 })
   seatNumber: string;
 
+  @Column()
+  isAvailable: boolean;
+
   @OneToMany(() => Booking, booking => booking.seat)
   bookings: Booking[];
 }

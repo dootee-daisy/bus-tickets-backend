@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBusDto } from './dto/create-bus.dto';
 import { UpdateBusDto } from './dto/update-bus.dto';
 import { Bus } from './entities/bus.entity';
@@ -13,10 +13,7 @@ export class BusesService {
   ) {}
 
   create(createBusDto: CreateBusDto) : Promise<Bus> {
-    const bus = new Bus();
-    bus.licensePlate = createBusDto.licensePlate;
-    bus.model = createBusDto.model;
-    bus.capacity = createBusDto.capacity;
+    const bus = this.busRepository.create(createBusDto);
     return this.busRepository.save(bus);
   }
 
@@ -24,24 +21,29 @@ export class BusesService {
     return this.busRepository.find();
   }
 
-  findOne(id: number) : Promise<Bus> {
-    return this.busRepository.findOneBy({ id });
+  async findOne(id: number) : Promise<Bus> {
+    const bus = await this.busRepository.findOneBy({ id });
+    if (!bus) {
+      throw new NotFoundException(`Bus with ID ${id} not found`);
+    }
+    return bus;
   }
 
   async update(id: number, updateBusDto: UpdateBusDto) : Promise<Bus> {
-    const bus = await this.findOne(id);
+    const bus = await this.busRepository.preload({
+      id: id,
+      ...updateBusDto,
+    });
     if (!bus) {
-      throw new Error('Bus not found');
+      throw new NotFoundException(`Bus with ID ${id} not found`);
     }
-    Object.assign(bus, updateBusDto);
     return this.busRepository.save(bus);
   }
 
   async remove(id: number) : Promise<void> {
-    const bus = await this.findOne(id);
-    if (!bus) {
-      throw new Error('Bus not found');
+    const result = await this.busRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Bus with ID ${id} not found`);
     }
-    await this.busRepository.remove(bus);
   }
 }
