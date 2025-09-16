@@ -9,11 +9,15 @@ import { TripsModule } from './trips/trips.module';
 import { BusesModule } from './buses/buses.module';
 import { RoutesModule } from './routes/routes.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // để dùng process.env ở mọi nơi
+    }),
     TypeOrmModule.forRoot({
-      type: process.env.DB_TYPE as 'mysql',
+      type: 'mysql',
       host: process.env.DB_HOST,
       port: parseInt(process.env.DB_PORT as string, 10),
       username: process.env.DB_USERNAME,
