@@ -8,21 +8,18 @@ import { SeatsModule } from './seats/seats.module';
 import { TripsModule } from './trips/trips.module';
 import { BusesModule } from './buses/buses.module';
 import { RoutesModule } from './routes/routes.module';
-<<<<<<< HEAD
-=======
 import { TypeOrmModule } from '@nestjs/typeorm';
->>>>>>> 4df93d40347e61bd12bd4edde33486a4fbbee235
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: '103.82.24.7',
-      port: 3306,
-      username: 'mhirgrp_bus_tickets',
-      password: 'mhirgrp_bus_tickets',
-      database: 'mhirgrp_bus_tickets',
-      entities: [],
+      type: process.env.DB_TYPE as 'mysql',
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT as string, 10),
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      entities: ['dist/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
     UsersModule, 
