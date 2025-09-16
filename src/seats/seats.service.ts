@@ -1,26 +1,46 @@
 import { Injectable } from '@nestjs/common';
 import { CreateSeatDto } from './dto/create-seat.dto';
 import { UpdateSeatDto } from './dto/update-seat.dto';
+import { Seat } from './entities/seat.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class SeatsService {
-  create(createSeatDto: CreateSeatDto) {
-    return 'This action adds a new seat';
+  constructor(
+    @InjectRepository(Seat)
+    private readonly seatRepository: Repository<Seat>,
+  ) {}
+
+  create(createSeatDto: CreateSeatDto) : Promise<Seat> {
+    const seat = new Seat();
+    seat.seatNumber = createSeatDto.seatNumber;
+    seat.isAvailable = createSeatDto.isAvailable;
+    return this.seatRepository.save(seat);
   }
 
-  findAll() {
-    return `This action returns all seats`;
+  findAll() : Promise<Seat[]> {
+    return this.seatRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} seat`;
+  findOne(id: number) : Promise<Seat> {
+    return this.seatRepository.findOneBy({ id });
   }
 
-  update(id: number, updateSeatDto: UpdateSeatDto) {
-    return `This action updates a #${id} seat`;
+  async update(id: number, updateSeatDto: UpdateSeatDto) : Promise<Seat> {
+    const seat = await this.findOne(id);
+    if (!seat) {
+      throw new Error('Seat not found');
+    }
+    Object.assign(seat, updateSeatDto);
+    return this.seatRepository.save(seat);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} seat`;
+  async remove(id: number) : Promise<void> {
+    const seat = await this.findOne(id);
+    if (!seat) {
+      throw new Error('Seat not found');
+    }
+    await this.seatRepository.remove(seat);
   }
 }
